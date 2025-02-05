@@ -405,7 +405,7 @@ def _linear_transition(y1, y2):
     return lambda t: y1 + t * dx
 
 
-def transition(cross_section1, cross_section2, width_type="sine"):
+def transition(cross_section1, cross_section2, width_type="sine", offset_type="sine"):
     """Creates a CrossSection that smoothly transitions between two input
     CrossSections. Only cross-sectional elements that have the `name` (as in
     X.add(..., name = 'wg') ) parameter specified in both input CrosSections
@@ -420,6 +420,9 @@ def transition(cross_section1, cross_section2, width_type="sine"):
         Second input CrossSection
     width_type : {'sine', 'linear'}
         Sets the type of width transition used if any widths are different
+        between the two input CrossSections.
+    offset_type : {'sine', 'linear'}
+        Sets the type of offset transition used if any offsets are different
         between the two input CrossSections.
 
     Returns
@@ -453,8 +456,16 @@ def transition(cross_section1, cross_section2, width_type="sine"):
                 width1 = width1(1)
             if callable(width2):
                 width2 = width2(0)
-
-            offset_fun = _sinusoidal_transition(offset1, offset2)
+            
+            if offset_type == 'sine':
+                offset_fun = _sinusoidal_transition(offset1, offset2)
+            elif offset_type == 'linear':
+                offset_fun = _linear_transition(offset1, offset2)
+            else:
+                raise ValueError(
+                    "[PHIDL] transition() offset_type "
+                    + "argument must be one of {'sine','linear'}"
+                )
 
             if width_type == "sine":
                 width_fun = _sinusoidal_transition(width1, width2)
